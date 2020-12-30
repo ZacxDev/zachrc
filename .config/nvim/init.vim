@@ -22,6 +22,7 @@ set timeoutlen=300
 set guicursor=
 set hidden
 set hlsearch
+set nocompatible
 
 highlight ColorColumn ctermbg=blue guibg=lightgrey
 
@@ -29,6 +30,7 @@ call plug#begin(stdpath('config') . '/plugged')
 Plug 'jremmen/vim-ripgrep'
 Plug 'tpope/vim-fugitive'
 Plug 'mbbill/undotree'
+Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 Plug 'sheerun/vim-polyglot'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
@@ -79,6 +81,12 @@ let g:netrw_winsize = 25
 let g:fzf_layout = { 'down': '20%' }
 let g:incsearch#auto_nohlsearch = 1
 
+" Configure vim-go
+let g:go_auto_sameids = 0
+let g:go_fmt_command = "goimports"
+let g:go_auto_type_info = 1
+let g:go_addtags_transform = "snakecase"
+
 nnoremap <nowait> <C-p> :FZF<CR>
 nnoremap <leader>prw :CocSearch <C-R>=expand("<cword>")<CR><CR>
 nnoremap <leader>h :wincmd h<CR>
@@ -88,13 +96,13 @@ nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>u :UndotreeShow<CR>
 nnoremap <leader>pv :wincmd v<bar> :Ex <bar> :vertical resize 30<CR>
 nnoremap <silent> <space>d :<C-u>CocList diagnostics<cr>
-nnoremap <silent> K :call <SID>show_documentation()<CR>
+nnoremap <leader><leader> :call <SID>show_documentation()<CR>
 nnoremap <Leader>ee oif err != nil {<CR>return err<CR>}<CR><esc>kkI<esc>
 nnoremap <silent> <Leader>. :Files <C-r>=expand("%:h")<CR>/<CR>
-nmap <leader>gd <Plug>(coc-definition)
+"nmap <leader>gd <Plug>(coc-definition)
 nmap <leader>gy <Plug>(coc-type-definition)
 nmap <leader>gi <Plug>(coc-implementation)
-nmap <leader>gr <Plug>(coc-references)
+nmap <leader>gr :call <SID>go_ref()<CR>
 nmap <leader>rr <Plug>(coc-rename)
 nmap <leader>do <Plug>(coc-codeaction)
 nmap <leader>L $
@@ -118,10 +126,18 @@ nmap <leader>gJ 9999<leader>gj
 nmap <leader>gK 9999<leader>gk
 nmap <leader>gh :Glog! -- % <bar> :wincmd j<CR>
 
+au FileType go nmap <leader>gd <Plug>(go-def)
+
 function! s:show_documentation()
   if (index(['vim','help'], &filetype) >= 0)
     execute 'h '.expand('<cword>')
   else
     call CocAction('doHover')
   endif
+endfunction
+
+function! s:go_ref()
+  :GoReferrers
+  sleep 100m
+  :wincmd j
 endfunction
